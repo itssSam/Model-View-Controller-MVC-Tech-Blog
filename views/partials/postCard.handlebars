@@ -1,8 +1,6 @@
 <div class="post-card">
-    <h3><a href="/posts/{{id}}">{{title}}</a></h3>
-    <p>{{content}}</p>
-    <small>Posted by {{author.username}} on {{formatDate createdAt}}</small>
-    {{#if isAuthor}}
-        <a href="/posts/edit/{{id}}">Edit</a>
-    {{/if}}
+  <h3>{{title}}</h3>
+  <p>{{content}}</p>
+  <p>Posted by {{author.username}} on {{formatDate createdAt}}</p>
+  <button onclick="location.href='/posts/{{id}}'">Read More</button>
 </div>
