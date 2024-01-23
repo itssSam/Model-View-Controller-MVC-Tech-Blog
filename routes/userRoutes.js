@@ -1,76 +1,32 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcrypt');
 const withAuth = require('../middleware/authMiddleware');
+const userController = require('../controllers/userController'); // Import the controller
+const { User } = require('../models'); // Import your User model
 
-// Import your User model
-const { User } = require('../models');
-
-// Signup route
+// Routes using the methods defined in userController.
+router.post('/signup', userController.signup);
+router.post('/login', userController.login);
+router.post('/logout', userController.logout);
 router.post('/signup', async (req, res) => {
     try {
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-        // Create a new user
         const newUser = await User.create({
             username: req.body.username,
-            password: hashedPassword,
-            // Add other user fields as needed
+            password: req.body.password // Ensure you have password hashing in place
         });
-
-        // Set up session variables here, if using sessions
-        // req.session.user = ...
-
-        res.status(201).json(newUser);
+        // After signup, redirect to the login page
+        res.redirect('/login');
+        // Alternatively, send a JSON response
+        // res.json({ message: 'Signup successful' });
     } catch (error) {
-        console.error('Error during signup:', error);
-        res.status(500).json({ message: 'Error signing up' });
+        // Handle errors
+        res.status(500).json(error);
     }
 });
 
-// Login route
-router.post('/login', async (req, res) => {
-    try {
-        // Check if user exists
-        const user = await User.findOne({ where: { username: req.body.username } });
-        if (!user) {
-            return res.status(400).json({ message: 'Incorrect username or password' });
-        }
-
-        // Compare hashed password
-        const isValid = await bcrypt.compare(req.body.password, user.password);
-        if (!isValid) {
-            return res.status(400).json({ message: 'Incorrect username or password' });
-        }
-
-        // Set session variables here
-        // req.session.user = ...
-
-        res.json({ message: 'You are now logged in' });
-    } catch (error) {
-        console.error('Error during login:', error);
-        res.status(500).json({ message: 'Error logging in' });
-    }
-});
-
-// Logout route
-router.post('/logout', (req, res) => {
-    // Destroy session/log user out
-    // req.session.destroy(...);
-    res.json({ message: 'You are now logged out' });
-});
-
-// Dashboard route
-router.get('/dashboard', withAuth, async (req, res) => {
-    // Logic to display the dashboard, typically fetching user-specific data
-    // ...
-});
-
-// Update user profile
-router.put('/update-profile', withAuth, async (req, res) => {
-    // Logic to update user profile
-    // ...
-});
+// Ensure that the dashboard and updateProfile methods are defined in your userController.
+// If they are not, either implement them or remove these routes.
+router.get('/dashboard', withAuth, userController.dashboard); // Include only if dashboard method is implemented in userController
+router.put('/update-profile', withAuth, userController.updateProfile); // Include only if updateProfile method is implemented in userController
 
 module.exports = router;
